@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Sensor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef3f8;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 { color: #333; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 20px;
+      width: 300px;
+      margin: 10px auto;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .on { background: #4CAF50; color: white; }
+    .off { background: #f44336; color: white; }
+  </style>
+</head>
+<body>
+  <h1>🌡️ Dashboard Sensor ESP32</h1>
+
+  <div class="card">
+    <h3>Data Sensor</h3>
+    <p><b>Suhu:</b> <span id="suhu">-</span> °C</p>
+    <p><b>Kelembapan:</b> <span id="kelembapan">-</span> %</p>
+    <p><b>Kecerahan:</b> <span id="lux">-</span> lux</p>
+    <p><b>Waktu:</b> <span id="timestamp">-</span></p>
+  </div>
+
+  <div class="card">
+    <h3>Kontrol LED</h3>
+    <button class="on" onclick="setLed('on')">LED ON</button>
+    <button class="off" onclick="setLed('off')">LED OFF</button>
+  </div>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch('/api/data/latest');
+      const data = await res.json();
+      if (data) {
+        document.getElementById('suhu').innerText = data.suhu ?? '-';
+        document.getElementById('kelembapan').innerText = data.humidity ?? '-';
+        document.getElementById('lux').innerText = data.lux ?? '-';
+        document.getElementById('timestamp').innerText = data.timestamp ?? '-';
+      }
+    }
+
+    async function setLed(status) {
+      await fetch('/api/led', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ status })
+      });
+      alert(`LED turned ${status.toUpperCase()}`);
+    }
+
+    // update data tiap 3 detik
+    fetchData();
+    setInterval(fetchData, 3000);
+  </script>
+</body>
+</html>
